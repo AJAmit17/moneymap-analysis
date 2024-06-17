@@ -5,6 +5,8 @@ import plotly.graph_objects as go
 import base64
 import seaborn as sns
 import matplotlib.pyplot as plt
+from wordcloud import WordCloud
+import networkx as nx
 
 st.title("CSV Data Visualization")
 
@@ -96,6 +98,50 @@ if uploaded_file is not None:
     fig = px.violin(df, x='type', y='amount', box=True, points="all", title='Violin Plot of Amounts by Type')
     fig.update_layout(height=600, width=1000)
     st.plotly_chart(fig)
+
+    # Heatmap
+    st.write("Heatmap of Amounts:")
+    heatmap_data = df.pivot_table(index='category', columns='type', values='amount', aggfunc='sum')
+    fig = px.imshow(heatmap_data, text_auto=True, aspect="auto", title='Heatmap of Amounts by Category and Type')
+    fig.update_layout(height=600, width=1000)
+    st.plotly_chart(fig)
+
+    # Sunburst Chart
+    st.write("Sunburst Chart:")
+    fig = px.sunburst(df, path=['type', 'category'], values='amount', title='Sunburst Chart of Amounts')
+    fig.update_layout(height=600, width=1000)
+    st.plotly_chart(fig)
+
+    # Scatter Matrix
+    st.write("Scatter Matrix:")
+    fig = px.scatter_matrix(df, dimensions=['amount'], color='type', title='Scatter Matrix of Amounts')
+    fig.update_layout(height=600, width=1000)
+    st.plotly_chart(fig)
+
+    # 3D Scatter Plot
+    if 'date' in df.columns:
+        df['year'] = df['date'].dt.year
+        df['month'] = df['date'].dt.month
+        fig = px.scatter_3d(df, x='year', y='month', z='amount', color='type', title='3D Scatter Plot of Amounts Over Time')
+        fig.update_layout(height=600, width=1000)
+        st.plotly_chart(fig)
+        
+    # Word Cloud
+    if 'description' in df.columns:
+        st.write("Word Cloud of Descriptions:")
+        text = ' '.join(df['description'].astype(str).tolist())
+        wordcloud = WordCloud(width=800, height=400, background_color='white').generate(text)
+        plt.figure(figsize=(10, 5))
+        plt.imshow(wordcloud, interpolation='bilinear')
+        plt.axis('off')
+        st.pyplot(plt)
+
+    # Animated Line Chart
+    st.write("Animated Line Chart:")
+    if 'date' in df.columns:
+        fig = px.line(df, x='date', y='amount', color='type', animation_frame='date', title='Animated Line Chart of Amounts Over Time')
+        fig.update_layout(height=600, width=1000)
+        st.plotly_chart(fig)
 
     ####### Only in Development Env ############
     # Offer download link for the processed data
