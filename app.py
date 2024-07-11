@@ -2,8 +2,6 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-import base64
-import seaborn as sns
 import matplotlib.pyplot as plt
 from wordcloud import WordCloud
 import networkx as nx
@@ -125,7 +123,7 @@ if uploaded_file is not None:
         fig = px.scatter_3d(df, x='year', y='month', z='amount', color='type', title='3D Scatter Plot of Amounts Over Time')
         fig.update_layout(height=600, width=1000)
         st.plotly_chart(fig)
-        
+
     # Word Cloud
     if 'description' in df.columns:
         st.write("Word Cloud of Descriptions:")
@@ -136,19 +134,27 @@ if uploaded_file is not None:
         plt.axis('off')
         st.pyplot(plt)
 
-    # Animated Line Chart
-    st.write("Animated Line Chart:")
-    if 'date' in df.columns:
-        fig = px.line(df, x='date', y='amount', color='type', animation_frame='date', title='Animated Line Chart of Amounts Over Time')
-        fig.update_layout(height=600, width=1000)
-        st.plotly_chart(fig)
+    # Parallel Coordinates Plot
+    st.write("Parallel Coordinates Plot:")
+    fig = px.parallel_coordinates(df, color='amount', labels={"amount": "Amount", "type": "Type", "category": "Category"},
+                                  title='Parallel Coordinates Plot')
+    fig.update_layout(height=600, width=1000)
+    st.plotly_chart(fig)
 
-    ####### Only in Development Env ############
+    # Radial Bar Chart
+    st.write("Radial Bar Chart:")
+    fig = px.bar_polar(df, r='amount', theta='category', color='type', title='Radial Bar Chart of Amounts by Category')
+    fig.update_layout(height=600, width=1000)
+    st.plotly_chart(fig)
+
     # Offer download link for the processed data
-    csv = df.to_csv(index=False)
-    b64 = base64.b64encode(csv.encode()).decode()  # Convert DataFrame to base64 encoding
-    href = f'<a href="data:file/csv;base64,{b64}" download="processed_data.csv">Download CSV File</a>'
-    st.markdown(href, unsafe_allow_html=True)
+    csv = df.to_csv(index=False).encode('utf-8')
+    st.download_button(
+        label="Download CSV",
+        data=csv,
+        file_name='downloaded_file.csv',
+        mime='text/csv',
+    )
 
 else:
     st.write("Please upload a CSV file.")
